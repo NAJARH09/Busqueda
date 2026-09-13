@@ -126,68 +126,135 @@
     </div>
 </div>
 
-async function copiarProducto() {
+<script>
+    function copiarProducto() {
 
-const codigo = document.getElementById("p-codigo")?.innerText || "";
-const precioU = document.getElementById("p-preciou")?.innerText || "";
-const precioC = document.getElementById("p-precioc")?.innerText || "";
-const cantidadC = document.getElementById("p-cantc")?.innerText || "";
-const precioDistribuidor =
-document.getElementById("p-distribuidor")?.innerText || "";
+    const codigo = document.getElementById("p-codigo")?.innerText || "";
+    const precioU = document.getElementById("p-preciou")?.innerText || "";
+    const precioC = document.getElementById("p-precioc")?.innerText || "";
+    const cantidadC = document.getElementById("p-cantc")?.innerText || "";
+    const precioDistribuidor = document.getElementById("p-distribuidor")?.innerText || "";
 
-const texto = `Código: ${codigo}
+    const texto = `Código: ${codigo}
 💰 Precio Unitario: ${precioU}
 📦 Precio Caja (${cantidadC} unidades): ${precioC}
-🤝 Precio Distribuidor (${cantidadC} unidades): ${precioDistribuidor}`;
+🤝 Precio Distribuidor(${cantidadC} unidades): ${precioDistribuidor}`;
 
-const imagen = document.querySelector(".product-image img");
+    navigator.clipboard.writeText(texto).then(() => {
 
-try {
+        const boton = document.querySelector(".copy-button");
 
-if (imagen) {
+        boton.innerHTML = "✅ Copiado";
+        boton.classList.add("copied");
 
-// Descargamos la imagen que está mostrando el buscador
-const respuesta = await fetch(imagen.src);
-const blob = await respuesta.blob();
+        setTimeout(() => {
 
-// Convertimos el texto en un Blob
-const textoBlob = new Blob(
-[texto],
-{ type: "text/plain" }
-);
+            boton.innerHTML = "📋 Copiar respuesta";
+            boton.classList.remove("copied");
 
-// Ponemos texto + imagen en el portapapeles
-const item = new ClipboardItem({
-"text/plain": textoBlob,
-"image/png": blob
+        }, 1800);
+
+    });
+
+}
+    const formImportar = document.getElementById("formImportar");
+
+formImportar.addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+    const estado = document.getElementById("estadoImportacion");
+
+    estado.className = "estado-cargando";
+    estado.innerHTML = "⏳ Importando Excel...";
+
+    const datos = new FormData(this);
+
+    try{
+
+        const response = await fetch("/importar",{
+
+            method:"POST",
+
+            body:datos
+
+        });
+
+        const mensaje = await response.text();
+
+        if(mensaje === "OK"){
+
+            estado.className = "estado-ok";
+            estado.innerHTML = "✅ Excel importado correctamente.";
+
+            setTimeout(function(){
+
+                document.getElementById("modalImportar").style.display="none";
+
+                estado.innerHTML="";
+
+                formImportar.reset();
+
+            },1500);
+
+        }else{
+
+            estado.className="estado-error";
+
+            estado.innerHTML="❌ Error al importar.";
+
+        }
+
+    }catch(e){
+
+        estado.className="estado-error";
+
+        estado.innerHTML="❌ Error al importar.";
+
+    }
+
+});
+    const buscador = document.getElementById("buscar");
+const sugerencias = document.getElementById("sugerencias");
+
+buscador.addEventListener("keyup", function () {
+
+    const texto = this.value.trim();
+
+    if (texto.length < 2) {
+        sugerencias.innerHTML = "";
+        return;
+    }
+
+    fetch("/api/productos?texto=" + encodeURIComponent(texto))
+        .then(response => response.json())
+        .then(datos => {
+
+            sugerencias.innerHTML = "";
+
+            datos.forEach(producto => {
+
+                sugerencias.innerHTML += `
+                    <div class="suggestion-item"
+                         onclick="seleccionarProducto('${producto.codigo}')">
+
+                        <strong>${producto.codigo}</strong><br>
+                        ${producto.descripcion}
+
+                    </div>
+                `;
+
+            });
+
+        });
+
 });
 
-await navigator.clipboard.write([item]);
+function seleccionarProducto(codigo){
 
-} else {
+    window.location.href="/buscar?codigo="+codigo;
 
-// Si no existe imagen, copiamos solamente el texto
-await navigator.clipboard.writeText(texto);
 }
-
-const boton = document.querySelector(".copy-button");
-
-boton.innerHTML = "✅ Copiado";
-boton.classList.add("copied");
-
-setTimeout(() => {
-
-boton.innerHTML = "📋 Copiar respuesta";
-boton.classList.remove("copied");
-
-}, 1800);
-
-} catch (error) {
-
-console.error("Error al copiar:", error);
-
-alert("No se pudo copiar la imagen y el texto.");
-}
-}
+</script>
 </body>
 </html>
