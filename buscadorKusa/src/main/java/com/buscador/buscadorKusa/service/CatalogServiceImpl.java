@@ -14,15 +14,38 @@ public class CatalogServiceImpl implements CatalogoService {
             return null;
         }
 
+        System.out.println("=================================");
+        System.out.println("CODIGO RECIBIDO: [" + codigo + "]");
+
         String codigoLimpio = codigo.trim();
 
-        // Primero buscamos la imagen usando el código tal como viene.
+        System.out.println("CODIGO LIMPIO: [" + codigoLimpio + "]");
+
+        System.out.println("IMAGEN EXACTA EXISTE: "
+                + existeImagen(codigoLimpio));
+
+        if (codigoLimpio.startsWith("KC")
+                && !codigoLimpio.startsWith("KC-")) {
+
+            String codigoConGuion =
+                    "KC-" + codigoLimpio.substring(2);
+
+            System.out.println("CODIGO CON GUION: [" + codigoConGuion + "]");
+
+            System.out.println("IMAGEN CON GUION EXISTE: "
+                    + existeImagen(codigoConGuion));
+        }
+
+        System.out.println("=================================");
+
+        // 1. Buscar exactamente como viene
         if (existeImagen(codigoLimpio)) {
             return "/catalogo/" + codigoLimpio + ".png";
         }
 
-        // Si no existe, probamos agregando un guion después de KC.
-        if (codigoLimpio.startsWith("KC") && !codigoLimpio.startsWith("KC-")) {
+        // 2. Probar agregando guion
+        if (codigoLimpio.startsWith("KC")
+                && !codigoLimpio.startsWith("KC-")) {
 
             String codigoConGuion =
                     "KC-" + codigoLimpio.substring(2);
@@ -53,6 +76,8 @@ public class CatalogServiceImpl implements CatalogoService {
         } catch (Exception e) {
             return false;
         }
+
     }
+
 }
 
