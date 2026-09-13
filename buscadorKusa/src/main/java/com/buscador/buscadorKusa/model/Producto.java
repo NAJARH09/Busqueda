@@ -28,5 +28,6 @@ public class Producto {
     private BigDecimal precioDistribuidor;
 
     private Integer cantidadCaja;
-
+    @Column(columnDefinition = "TEXT")
+    private String imagen;
 }

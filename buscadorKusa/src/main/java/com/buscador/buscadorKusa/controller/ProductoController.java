@@ -1,10 +1,7 @@
 package com.buscador.buscadorKusa.controller;
 
-
-
-
-
 import com.buscador.buscadorKusa.model.Producto;
+import com.buscador.buscadorKusa.service.CatalogoService;
 import com.buscador.buscadorKusa.service.ProductoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,9 +12,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ProductoController {
 
     private final ProductoService productoService;
+    private final CatalogoService catalogoService;
 
-    public ProductoController(ProductoService productoService) {
+    public ProductoController(
+            ProductoService productoService,
+            CatalogoService catalogoService) {
+
         this.productoService = productoService;
+        this.catalogoService = catalogoService;
     }
 
     @GetMapping("/")
@@ -36,9 +38,14 @@ public class ProductoController {
 
             model.addAttribute("producto", producto);
 
+            if (producto != null) {
+                String imagen =
+                        catalogoService.buscarImagenPorCodigo(producto.getCodigo());
+
+                model.addAttribute("imagen", imagen);
+            }
         }
 
         return "buscar";
     }
-
 }
