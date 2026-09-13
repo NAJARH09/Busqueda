@@ -73,9 +73,9 @@
         <div class="info-group"><b>Cantidad Caja</b><span id="p-cantc" th:text="${producto.cantidadCaja}"></span></div>
         <div class="info-group"><b>Precio Distribuidor</b><span id="p-distribuidor" th:text="${'S/ '+producto.precioDistribuidor}"></span></div>
 
-        <div class="product-image">
+        <div class="product-image" th:if="${imagen != null}">
             <img
-                    th:src="@{'/catalogo/' + ${producto.codigo} + '.png'}"
+                    th:src="${imagen}"
                     th:alt="${producto.codigo}">
         </div>
         <button type="button" class="btn copy-button" onclick="copiarProducto()">📋 Copiar respuesta</button>
