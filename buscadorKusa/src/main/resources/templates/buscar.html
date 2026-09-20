@@ -214,15 +214,62 @@ formImportar.addEventListener("submit", async function(e){
     }
 
 });
-    const buscador = document.getElementById("buscar");
+
+const buscador = document.getElementById("buscar");
 const sugerencias = document.getElementById("sugerencias");
 
-buscador.addEventListener("keyup", function () {
+let indiceSeleccionado = -1;
+
+buscador.addEventListener("keyup", function (e) {
 
     const texto = this.value.trim();
 
+    // Flecha abajo
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        moverSeleccion(1);
+        return;
+    }
+
+    // Flecha arriba
+    if (e.key === "ArrowUp") {
+        e.preventDefault();
+        moverSeleccion(-1);
+        return;
+    }
+
+    // Enter
+    if (e.key === "Enter") {
+
+        e.preventDefault();
+
+        const opciones = sugerencias.querySelectorAll(".suggestion-item");
+
+        if (indiceSeleccionado >= 0 && opciones[indiceSeleccionado]) {
+
+            opciones[indiceSeleccionado].click();
+
+        } else if (texto.length > 0) {
+
+            // Si no hay una sugerencia seleccionada,
+            // hace la búsqueda normal
+            document.querySelector(".search-form").closest("form").submit();
+        }
+
+        return;
+    }
+
+    // Escape
+    if (e.key === "Escape") {
+        sugerencias.innerHTML = "";
+        indiceSeleccionado = -1;
+        return;
+    }
+
+    // Buscar sugerencias
     if (texto.length < 2) {
         sugerencias.innerHTML = "";
+        indiceSeleccionado = -1;
         return;
     }
 
@@ -231,11 +278,13 @@ buscador.addEventListener("keyup", function () {
         .then(datos => {
 
             sugerencias.innerHTML = "";
+            indiceSeleccionado = -1;
 
-            datos.forEach(producto => {
+            datos.forEach((producto, index) => {
 
                 sugerencias.innerHTML += `
                     <div class="suggestion-item"
+                         data-index="${index}"
                          onclick="seleccionarProducto('${producto.codigo}')">
 
                         <strong>${producto.codigo}</strong><br>
@@ -250,11 +299,52 @@ buscador.addEventListener("keyup", function () {
 
 });
 
-function seleccionarProducto(codigo){
 
-    window.location.href="/buscar?codigo="+codigo;
+function moverSeleccion(direccion) {
+
+    const opciones = sugerencias.querySelectorAll(".suggestion-item");
+
+    if (opciones.length === 0) {
+        return;
+    }
+
+    // Quitar selección anterior
+    opciones.forEach(opcion => {
+        opcion.style.background = "";
+    });
+
+    // Mover índice
+    indiceSeleccionado += direccion;
+
+    // Si llega al final, vuelve al primero
+    if (indiceSeleccionado >= opciones.length) {
+        indiceSeleccionado = 0;
+    }
+
+    // Si sube desde el primero, va al último
+    if (indiceSeleccionado < 0) {
+        indiceSeleccionado = opciones.length - 1;
+    }
+
+    // Marcar sugerencia actual
+    opciones[indiceSeleccionado].style.background = "#eef4ff";
+
+    // Opcional: mantener visible la opción
+    opciones[indiceSeleccionado].scrollIntoView({
+        block: "nearest"
+    });
+}
+
+
+function seleccionarProducto(codigo) {
+
+    window.location.href = "/buscar?codigo=" + encodeURIComponent(codigo);
 
 }
+
+
+
+
 </script>
 </body>
 </html>
